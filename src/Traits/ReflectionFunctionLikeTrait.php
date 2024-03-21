@@ -21,6 +21,7 @@ use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\NullableType;
+use PhpParser\Node\UnionType;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeTraverser;
@@ -190,6 +191,13 @@ trait ReflectionFunctionLikeTrait
         if ($returnType instanceof Identifier) {
             $isBuiltin  = true;
             $returnType = $returnType->toString();
+        } elseif (is_object($returnType) && ($returnType instanceof UnionType)) {
+            $types = [];
+            foreach ($returnType->types as $nameString) {
+                $types[] = $nameString;
+            }
+            $isBuiltin = true;
+            $returnType = implode("|", $types);
         } elseif (is_object($returnType)) {
             $returnType = $returnType->toString();
         } elseif (is_string($returnType)) {
